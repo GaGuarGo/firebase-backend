@@ -1,3 +1,6 @@
+## 0.0.2
+- Adição do método de signOut
+
 ## 0.0.1
 
 - Abstração de endpoints para Firestore (GET, POST, UPDATE, DELETE)
