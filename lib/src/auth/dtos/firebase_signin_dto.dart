@@ -1,33 +1,28 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-
 import 'package:firebase_backend/src/data/dto/firebase_request_dto.dart';
 import 'package:firebase_backend/src/domain/error/dto_validation_error.dart';
 
-class FirebaseSignupDto extends FirebaseRequestDto {
-  String? email;
-  String? password;
-  String? displayName;
+class FirebaseSigninDto extends FirebaseRequestDto {
+  final String email;
+  final String password;
 
-  FirebaseSignupDto({this.email, this.password, this.displayName});
+  FirebaseSigninDto({required this.email, required this.password});
 
   @override
-  Map<String, dynamic> toJson() {
-    return {'email': email, 'password': password, 'displayName': displayName};
-  }
+  Map<String, dynamic> toJson() => {};
 
   @override
   bool validate() {
-    if (email == null || email!.isEmpty) {
+    if (email.isEmpty) {
       validationErrors.add(
         DtoValidationError(
           field: 'email',
-          validationError: 'Email não pode ser nulo ou vazio',
+          validationError: 'Email não pode ser vazio',
         ),
       );
       return false;
     }
 
-    if (!RegExp(r"^[\w\.-]+@[\w\.-]+\.\w{2,}$").hasMatch(email!)) {
+    if (!RegExp(r"^[\w\.-]+@[\w\.-]+\.\w{2,}$").hasMatch(email)) {
       validationErrors.add(
         DtoValidationError(
           field: 'email',
@@ -37,11 +32,11 @@ class FirebaseSignupDto extends FirebaseRequestDto {
       return false;
     }
 
-    if (password == null || password!.isEmpty) {
+    if (password.isEmpty) {
       validationErrors.add(
         DtoValidationError(
           field: 'password',
-          validationError: 'Password não pode ser nulo ou vazio',
+          validationError: 'Password não pode ser vazio',
         ),
       );
       return false;
