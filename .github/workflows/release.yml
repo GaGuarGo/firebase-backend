@@ -7,23 +7,25 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           channel: stable
 
-      - name: Create GitHub Release
-        uses: google-github-actions/release-please-action@v4
+      - run: flutter pub get
+      - run: flutter test
+
+      - name: Release Please
+        uses: googleapis/release-please-action@v4
         with:
           release-type: dart
