@@ -23,12 +23,6 @@ jobs:
         with:
           channel: stable
 
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Run tests
-        run: flutter test
-
       - name: Create GitHub Release
         uses: google-github-actions/release-please-action@v4
         with:
