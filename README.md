@@ -1,39 +1,91 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
+# Firebase Backend
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
+> Solução modular para abstração de endpoints, DTOs, entidades e integração com Firebase Auth/Firestore em Dart/Flutter.
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+## ✨ Features
 
-## Features
+- Abstração de endpoints REST/Firestore
+- DTOs e entidades desacopladas
+- Validação e tratamento de erros customizados
+- Handlers para códigos de erro do Firebase Auth
+- Fácil integração com projetos Flutter/Dart
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+## 🚀 Getting Started
 
-## Getting started
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+1. **Adicione o pacote ao seu projeto:**
 
-## Usage
+	 No `pubspec.yaml` do projeto que for integrar:
+	 ```yaml
+	 dependencies:
+		 firebase_backend:
+			 git:
+				 url: https://github.com/Flownex/firebase-backend.git
+				 ref: main # ou a branch/tag desejada
+	 ```
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+2. **Configure o Firebase no seu projeto:**
+	- Utilize a função de inicialização fornecida pelo próprio package (`initializeFirebase` );
+	- Para detalhes avançados, consulte também a [documentação oficial do Firebase para Flutter](https://firebase.flutter.dev/docs/overview/).
 
-```dart
-const like = 'sample';
+3. **Implemente seus DTOs, entidades e endpoints:**
+	 - Crie DTOs herdando de `FirebaseRequestDto` e `FirebaseResponseDto`;
+	 - Crie entidades de domínio para separar regras de negócio;
+	 - Implemente endpoints herdando de `FirebaseGetEndpoint` e `FirebasePostEndpoint`.
+
+## 📦 Sugestão de Organização Modular
+
+Para projetos grandes, recomenda-se separar os endpoints em um package próprio, por exemplo:
+
+```
+my_project/
+	packages/
+		my_endpoints/       # Novo package apenas para endpoints do seu app
+	app/
+		lib/
+			main.dart
 ```
 
-## Additional information
+No `my_endpoints`, você pode importar o `firebase_backend` e criar endpoints específicos do seu domínio, mantendo o core desacoplado.
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+## 🛠️ Usage Example
+
+```dart
+import 'package:firebase_backend/firebase_backend.dart';
+
+class UserSignUpDto extends FirebaseRequestDto {
+	final String email;
+	final String password;
+	// ...
+	// Implementação dos métodos obrigatórios
+}
+
+class UserResponseDto extends FirebaseResponseDto {
+	// ...
+}
+
+class UserEndpoint extends FirebasePostEndpoint<UserSignUpDto, UserResponseDto> {
+	@override
+	String get path => 'users';
+
+	@override
+	UserResponseDto buildResponse(DocumentReference docRef, UserSignUpDto dto) {
+		// ...
+	}
+}
+
+// Uso:
+final endpoint = UserEndpoint();
+final response = await endpoint.post(UserSignUpDto(email: 'a@b.com', password: '123456'));
+```
+
+## 📝 Contribuindo
+
+Pull requests são bem-vindos! Para bugs, sugestões ou dúvidas, abra uma issue.
+
+## 📚 Mais informações
+
+- [Documentação oficial do Firebase](https://firebase.google.com/docs)
+- [Documentação do FlutterFire](https://firebase.flutter.dev/docs/overview/)
+
