@@ -13,3 +13,15 @@ abstract class FirebaseRequestDto {
   /// Must operate in conjunction with `validationErrors()` to provide detailed error information.
   bool validate();
 }
+
+class FirebaseNoRequestDto extends FirebaseRequestDto {
+  @override
+  Map<String, dynamic> toJson() {
+    return {};
+  }
+
+  @override
+  bool validate() {
+    return true;
+  }
+}
