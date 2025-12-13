@@ -49,6 +49,40 @@ my_project/
 
 No `my_endpoints`, você pode importar o `firebase_backend` e criar endpoints específicos do seu domínio, mantendo o core desacoplado.
 
+
+## 🔒 Auth Listener Example
+
+O package fornece o `FirebaseAuthListener` para escutar mudanças de autenticação do usuário em tempo real. Exemplo de uso:
+
+```dart
+import 'package:firebase_backend/firebase_backend.dart';
+
+final authListener = FirebaseAuthListener(
+	auth: () {
+		print('Usuário autenticado!');
+		// Ações quando o usuário faz login
+	},
+	unauth: () {
+		print('Usuário deslogado!');
+		// Ações quando o usuário faz logout
+	},
+);
+
+// Inicie o listener (ex: no initState de um widget ou no main)
+@override
+void initState() {
+	super.initState();
+	authListener.authListener();
+}
+
+// Não esqueça de cancelar o listener ao descartar o widget
+@override
+void dispose() {
+	authListener.dispose();
+	super.dispose();
+}
+```
+
 ## 🛠️ Usage Example
 
 ```dart
