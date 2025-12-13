@@ -28,6 +28,6 @@ abstract class FirebaseUpdateEndpoint<T extends FirebaseRequestDto> {
           .update(requestDto.toJson());
       return buildResponse(documentId, requestDto);
     }
-    throw FirebaseRequestDtoValidationError(requestDto.validationErrors());
+    throw FirebaseRequestDtoValidationError(requestDto.validationErrors);
   }
 }

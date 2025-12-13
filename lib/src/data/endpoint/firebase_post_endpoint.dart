@@ -29,6 +29,6 @@ abstract class FirebasePostEndpoint<
           .add(requestDto.toJson());
       return buildResponse(docRef, requestDto);
     }
-    throw FirebaseRequestDtoValidationError(requestDto.validationErrors());
+    throw FirebaseRequestDtoValidationError(requestDto.validationErrors);
   }
 }

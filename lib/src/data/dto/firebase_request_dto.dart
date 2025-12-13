@@ -6,8 +6,7 @@ abstract class FirebaseRequestDto {
 
   /// Returnas as list of validation errors found in the DTO.
   /// DtoValidationError contains the field name and the corresponding validation error message.
-  List<DtoValidationError> validationErrors();
-
+  List<DtoValidationError> validationErrors = [];
 
   /// Validates the DTO and returns true if it is valid, false otherwise.
   /// This method should check all necessary fields and their constraints.
