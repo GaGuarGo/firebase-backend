@@ -1,4 +1,4 @@
-name: Release Package
+name: Release Package Version
 
 on:
   push:
