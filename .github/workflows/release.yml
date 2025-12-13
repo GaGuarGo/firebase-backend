@@ -1,4 +1,4 @@
-name: Release Package Version
+name: Auto Release
 
 on:
   push:
@@ -7,22 +7,32 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: stable
+      - name: Get version from pubspec.yaml
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Release Please
-        uses: googleapis/release-please-action@v4
+      - name: Create Git tag
+        run: |
+          git tag v${{ steps.version.outputs.version }}
+          git push origin v${{ steps.version.outputs.version }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          release-type: dart
+          tag_name: v${{ steps.version.outputs.version }}
+          name: v${{ steps.version.outputs.version }}
+          body: |
+            Automated release for version v${{ steps.version.outputs.version }}
