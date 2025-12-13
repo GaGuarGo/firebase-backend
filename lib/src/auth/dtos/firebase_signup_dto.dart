@@ -44,6 +44,19 @@ class FirebaseSignupDto extends FirebaseRequestDto {
       );
       return false;
     }
+
+    if (displayName?.isNotEmpty ?? false) {
+      if (displayName!.length < 3) {
+        validationErrors.add(
+          DtoValidationError(
+            field: 'displayName',
+            validationError: 'Name deve ter pelo menos 3 caracteres',
+          ),
+        );
+        return false;
+      }
+    }
+
     return true;
   }
 }

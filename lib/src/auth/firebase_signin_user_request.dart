@@ -4,6 +4,10 @@ import 'package:firebase_backend/src/auth/firebase_auth_request.dart';
 import 'package:firebase_backend/src/domain/error/firebase_auth_error.dart';
 import 'package:firebase_backend/src/domain/error/firebase_request_dto_validation_error.dart';
 
+
+/// Creates a Firebase user sign-in request.
+/// This class implements the [FirebaseAuthRequest] interface to handle user
+/// sign-in operations using Firebase Authentication.
 class FirebaseSigninUser
     implements FirebaseAuthRequest<UserCredential, FirebaseSigninDto> {
   @override
