@@ -22,9 +22,6 @@ jobs:
         with:
           channel: stable
 
-      - run: flutter pub get
-      - run: flutter test
-
       - name: Release Please
         uses: googleapis/release-please-action@v4
         with:
