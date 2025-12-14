@@ -34,17 +34,18 @@ Future<void> intiFirebaseBackend({
   bool appCheck = false,
   String recaptchaSiteKey = '',
 }) async {
-  assert(
-    appCheck && recaptchaSiteKey.isEmpty,
-    'If appCheck is true, recaptchaSiteKey must be provided.',
-  );
-
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: options);
 
   if (appCheck) {
     if (kIsWeb) {
+      if (recaptchaSiteKey.isEmpty) {
+        throw ArgumentError(
+          'recaptchaSiteKey must be provided for App Check on web platforms.',
+        );
+      }
+
       await FirebaseAppCheck.instance.activate(
         providerWeb: ReCaptchaV3Provider(recaptchaSiteKey),
       );
