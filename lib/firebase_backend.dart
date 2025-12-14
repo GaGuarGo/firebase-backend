@@ -35,7 +35,7 @@ Future<void> intiFirebaseBackend({
   String recaptchaSiteKey = '',
 }) async {
   assert(
-    !appCheck && recaptchaSiteKey.isEmpty,
+    appCheck && recaptchaSiteKey.isEmpty,
     'If appCheck is true, recaptchaSiteKey must be provided.',
   );
 
