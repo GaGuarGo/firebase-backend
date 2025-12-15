@@ -1,3 +1,6 @@
+## 0.0.3
+- Fix no response DTO
+
 ## 0.0.2
 - Adição do método de signOut
 
