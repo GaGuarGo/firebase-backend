@@ -1,4 +1,7 @@
 ## 0.0.3
+- Adição dos endpoints de auth no export
+
+## 0.0.3
 - Fix no response DTO
 
 ## 0.0.2
