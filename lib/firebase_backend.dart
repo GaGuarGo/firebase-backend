@@ -6,6 +6,9 @@ import 'package:flutter/material.dart';
 // Exporting all necessary components of the Firebase backend package
 /// [auth]
 export 'package:firebase_backend/src/auth/firebase_auth_listener.dart';
+export 'package:firebase_backend/src/auth/firebase_signin_user_request.dart';
+export 'package:firebase_backend/src/auth/firebase_signup_user_request.dart';
+export 'package:firebase_backend/src/auth/firebase_signout_user_request.dart';
 
 /// [dto`s]
 export 'package:firebase_backend/src/data/dto/firebase_request_dto.dart';
