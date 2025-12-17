@@ -9,6 +9,8 @@ export 'package:firebase_backend/src/auth/firebase_auth_listener.dart';
 export 'package:firebase_backend/src/auth/firebase_signin_user_request.dart';
 export 'package:firebase_backend/src/auth/firebase_signup_user_request.dart';
 export 'package:firebase_backend/src/auth/firebase_signout_user_request.dart';
+export 'package:firebase_backend/src/auth/dtos/firebase_signin_dto.dart';
+export 'package:firebase_backend/src/auth/dtos/firebase_signup_dto.dart';
 
 /// [dto`s]
 export 'package:firebase_backend/src/data/dto/firebase_request_dto.dart';
