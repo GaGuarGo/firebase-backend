@@ -1,4 +1,7 @@
-## 0.0.3
+## 0.0.5
+- Adição dos dtos de auth no export
+
+## 0.0.4
 - Adição dos endpoints de auth no export
 
 ## 0.0.3
