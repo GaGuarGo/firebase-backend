@@ -1,4 +1,7 @@
 ## 0.0.5
+- Adição de mais um caso no error handler do auth
+
+## 0.0.5
 - Adição dos dtos de auth no export
 
 ## 0.0.4
