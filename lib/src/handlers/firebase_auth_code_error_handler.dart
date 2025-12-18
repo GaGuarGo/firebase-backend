@@ -1,5 +1,7 @@
 String firebaseAuthErrorMessage(String code) {
 	switch (code) {
+    case 'invalid-credential':
+      return 'As credenciais fornecidas são inválidas.';
 		case 'invalid-email':
 			return 'O e-mail informado é inválido.';
 		case 'user-disabled':
