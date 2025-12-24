@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'package:firebase_backend/src/domain/error/firebase_storage_error.dart';
@@ -27,7 +28,7 @@ abstract class FirebaseUploadToStorage {
           ? referenceBuilder(baseRef)
           : baseRef.child(
               fileName ??
-                  (kIsWeb ? (fileName ?? 'file') : file.uri.pathSegments.last),
+                  (kIsWeb ? (fileName ?? Timestamp.now().millisecondsSinceEpoch.toString()) : file.uri.pathSegments.last),
             );
 
       late TaskSnapshot uploadTask;
