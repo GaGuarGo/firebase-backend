@@ -1,4 +1,9 @@
-## 0.0.5
+## 0.0.7
+- Configuração para uso de streams para valor úncio ou para um array
+- Ajuste do FirebaseGetEndpoint para o uso de queryBuilders para filtrar a busca na query
+- Configuração para fazer upload do bucket
+
+## 0.0.6
 - Adição de mais um caso no error handler do auth
 
 ## 0.0.5

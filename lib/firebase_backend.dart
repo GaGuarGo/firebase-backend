@@ -21,6 +21,10 @@ export 'package:firebase_backend/src/data/endpoint/firebase_delete_endpoint.dart
 export 'package:firebase_backend/src/data/endpoint/firebase_get_endpoint.dart';
 export 'package:firebase_backend/src/data/endpoint/firebase_post_endpoint.dart';
 export 'package:firebase_backend/src/data/endpoint/firebase_update_endpoint.dart';
+export 'package:firebase_backend/src/data/endpoint/firebase_stream_endpoint.dart';
+
+/// [storage]
+export 'package:firebase_backend/src/data/storage/firebase_upload_to_storage.dart';
 
 /// ['entity']
 export 'package:firebase_backend/src/domain/entity/firebase_data_entity.dart';
@@ -30,6 +34,9 @@ export 'package:firebase_backend/src/domain/error/firebase_no_document_found_err
 export 'package:firebase_backend/src/domain/error/firebase_request_dto_validation_error.dart';
 export 'package:firebase_backend/src/domain/error/dto_validation_error.dart';
 export 'package:firebase_backend/src/domain/error/firebase_auth_error.dart';
+export 'package:firebase_backend/src/domain/error/firebase_storage_error.dart';
+export 'package:firebase_backend/src/domain/error/firebase_stream_error.dart';
+
 
 /// Initializes the Firebase backend with the provided options.
 /// If [appCheck] is true, Firebase App Check is also initialized using

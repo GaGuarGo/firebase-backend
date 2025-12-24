@@ -5,7 +5,7 @@
 
 ## ✨ Features
 
-- Abstração de endpoints REST/Firestore
+- Abstração de endpoints REST/Firestore (GET, POST, STREAM, UPLOAD)
 - DTOs e entidades desacopladas
 - Validação e tratamento de erros customizados
 - Handlers para códigos de erro do Firebase Auth
@@ -30,9 +30,34 @@
 	- Para detalhes avançados, consulte também a [documentação oficial do Firebase para Flutter](https://firebase.flutter.dev/docs/overview/).
 
 3. **Implemente seus DTOs, entidades e endpoints:**
-	 - Crie DTOs herdando de `FirebaseRequestDto` e `FirebaseResponseDto`;
-	 - Crie entidades de domínio para separar regras de negócio;
-	 - Implemente endpoints herdando de `FirebaseGetEndpoint` e `FirebasePostEndpoint`.
+	- Crie DTOs herdando de `FirebaseRequestDto` e `FirebaseResponseDto`;
+	- Crie entidades de domínio para separar regras de negócio;
+	- Implemente endpoints herdando de `FirebaseGetEndpoint`, `FirebasePostEndpoint`, `FirebaseStreamEndpoint`;
+	- Para upload de arquivos, utilize `FirebaseUploadStorage`.
+## 🔄 Stream Endpoint Example
+
+O package fornece o `FirebaseStreamEndpoint` para escutar mudanças em tempo real de documentos ou coleções do Firestore.
+
+```dart
+import 'package:firebase_backend/firebase_backend.dart';
+
+class UserStreamEndpoint extends FirebaseStreamEndpoint<UserResponseDto> {
+	@override
+	String get path => 'users';
+
+	@override
+	UserResponseDto buildResponse(DocumentSnapshot doc) {
+		// ...
+	}
+}
+
+// Uso:
+final endpoint = UserStreamEndpoint();
+final stream = endpoint.stream();
+stream.listen((user) {
+	// Atualizações em tempo real
+});
+```
 
 ## 📦 Sugestão de Organização Modular
 
@@ -83,6 +108,7 @@ void dispose() {
 }
 ```
 
+
 ## 🛠️ Usage Example
 
 ```dart
@@ -99,6 +125,18 @@ class UserResponseDto extends FirebaseResponseDto {
 	// ...
 }
 
+// Exemplo GET Endpoint
+class UserGetEndpoint extends FirebaseGetEndpoint<UserResponseDto> {
+	@override
+	String get path => 'users';
+
+	@override
+	UserResponseDto buildResponse(DocumentSnapshot doc) {
+		// ...
+	}
+}
+
+// Exemplo POST Endpoint
 class UserEndpoint extends FirebasePostEndpoint<UserSignUpDto, UserResponseDto> {
 	@override
 	String get path => 'users';
@@ -110,8 +148,33 @@ class UserEndpoint extends FirebasePostEndpoint<UserSignUpDto, UserResponseDto> 
 }
 
 // Uso:
-final endpoint = UserEndpoint();
-final response = await endpoint.post(UserSignUpDto(email: 'a@b.com', password: '123456'));
+final getEndpoint = UserGetEndpoint();
+final user = await getEndpoint.get('userId');
+
+final postEndpoint = UserEndpoint();
+final response = await postEndpoint.post(UserSignUpDto(email: 'a@b.com', password: '123456'));
+## ☁️ Upload de Arquivos (FirebaseUploadStorage)
+
+Para upload de arquivos (compatível com web e mobile), utilize a classe `FirebaseUploadStorage`:
+
+```dart
+import 'package:firebase_backend/firebase_backend.dart';
+
+class UserProfileUpload extends FirebaseUploadStorage {
+	@override
+	String get path => 'profile_pictures';
+}
+
+// Uso (mobile):
+final uploader = UserProfileUpload();
+final url = await uploader.upload(file: arquivoFile, fileName: 'avatar.png');
+
+// Uso (web):
+// file deve ser um objeto html.File
+final urlWeb = await uploader.upload(file: arquivoHtmlFile, fileName: 'avatar.png');
+```
+
+O método `upload` detecta automaticamente se está rodando na web ou mobile e faz o upload corretamente para o Firebase Storage.
 ```
 
 ## 📝 Contribuindo
