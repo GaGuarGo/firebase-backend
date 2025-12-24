@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_backend/src/domain/error/firebase_storage_error.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
-abstract class FirebaseUploadStorage {
+abstract class FirebaseUploadToStorage {
   String get path;
 
   Future<String> upload({
