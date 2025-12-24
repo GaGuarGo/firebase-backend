@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_backend/firebase_backend.dart';
+import 'package:firebase_backend/src/data/dto/firebase_response_dto.dart';
 import 'package:firebase_backend/src/domain/error/firebase_stream_error.dart';
 
 /// An abstract class representing a Firebase stream endpoint.
