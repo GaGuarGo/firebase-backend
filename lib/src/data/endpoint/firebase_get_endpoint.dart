@@ -3,19 +3,16 @@ import 'package:firebase_backend/src/data/dto/firebase_response_dto.dart';
 import 'package:firebase_backend/src/domain/error/firebase_no_document_found_error.dart';
 
 abstract class FirebaseGetEndpoint<R extends FirebaseResponseDto> {
-
   /// The Firestore collection path for the endpoint.
   /// [path] is used to specify the collection from which documents will be retrieved.
   /// For example, if your collection is named "users", the path would be "users".
   /// If your collection is nested, you can specify the full path like "users/{userId}/posts".
   String get path;
 
-
   /// Builds a response DTO from a Firestore document snapshot.
   /// [docSnapshot] is the Firestore document snapshot retrieved from the collection.
   /// This method should convert the document snapshot into the appropriate response DTO.
   R buildResponse(DocumentSnapshot docSnapshot);
-
 
   /// Retrieves a single document by its ID from the Firestore collection.
   /// [documentId] is the ID of the document to be retrieved.
@@ -35,15 +32,23 @@ abstract class FirebaseGetEndpoint<R extends FirebaseResponseDto> {
     );
   }
 
-
   /// Retrieves all documents from the Firestore collection.
   /// Returns a Future that resolves to a list of response DTOs representing all documents in the collection.
   /// Each document is converted to a response DTO using the buildResponse method.
-  Future<List<R>> findAll() async {
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection(path)
-        .get();
+  Future<List<R>> findAll({
+    Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>> query)?
+    queryBuilder,
+  }) async {
+    Query<Map<String, dynamic>> query = FirebaseFirestore.instance.collection(
+      path,
+    );
 
-    return querySnapshot.docs.map((doc) => buildResponse(doc)).toList();
+    if (queryBuilder != null) {
+      query = queryBuilder(query);
+    }
+
+    final snapshot = await query.get();
+
+    return snapshot.docs.map(buildResponse).toList();
   }
 }
