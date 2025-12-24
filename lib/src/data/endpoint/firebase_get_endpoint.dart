@@ -35,6 +35,7 @@ abstract class FirebaseGetEndpoint<R extends FirebaseResponseDto> {
   /// Retrieves all documents from the Firestore collection.
   /// Returns a Future that resolves to a list of response DTOs representing all documents in the collection.
   /// Each document is converted to a response DTO using the buildResponse method.
+  /// Optionally, a [queryBuilder] function can be provided to customize the query.
   Future<List<R>> findAll({
     Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>> query)?
     queryBuilder,
