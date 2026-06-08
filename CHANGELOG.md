@@ -1,3 +1,6 @@
+## 0.0.8
+- Atualização das docs
+
 ## 0.0.7
 - Configuração para uso de streams para valor úncio ou para um array
 - Ajuste do FirebaseGetEndpoint para o uso de queryBuilders para filtrar a busca na query
