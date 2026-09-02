@@ -1,47 +1,65 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-
-import 'package:firebase_backend/src/domain/error/firebase_storage_error.dart';
+import 'package:firebase_backend/src/domain/exception/firebase_backend_storage_exception.dart';
+import 'package:firebase_backend/src/firebase_backend_config.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart' show kIsWeb, protected;
 
+/// Uploads files to the Storage folder at [path].
 abstract class FirebaseUploadToStorage {
-  /// The Firestore collection path for the endpoint.
-  /// [path] is used to specify the collection from which documents will be retrieved.
-  /// For example, if your collection is named "users", the path would be "users".
-  /// If your collection is nested, you can specify the full path like "users/{userId}/posts".
+  /// The Firebase Storage folder this uploader writes into, for example
+  /// `'profile_pictures'`.
   String get path;
 
+  /// The Storage instance to upload to. Defaults to [FirebaseBackend.storage].
+  @protected
+  FirebaseStorage get storage => FirebaseBackend.storage;
 
-  /// Uploads a file to Firebase Storage.
-  /// [file] is the file to be uploaded. It can be a Blob (for web) or a File (for mobile).
-  /// [fileName] is an optional name for the file. If not provided, the original file name will be used.
-  /// [referenceBuilder] is an optional function to customize the storage reference.
-  /// Returns a Future that resolves to the download URL of the uploaded file.
+  /// Uploads [file] and returns its download URL.
+  ///
+  /// [file] is platform dependent: a `dart:html` `Blob` on web, a `dart:io`
+  /// `File` everywhere else. It is `dynamic` because those two types cannot
+  /// both be imported in a single library.
+  ///
+  /// [fileName] names the object inside [path]. Without it the name comes from
+  /// the file itself on native, and from the current timestamp on web, where
+  /// a `Blob` carries no name.
+  ///
+  /// [referenceBuilder] takes over placement entirely when the default naming
+  /// is not enough:
+  ///
+  /// ```dart
+  /// await uploader.upload(
+  ///   file: file,
+  ///   referenceBuilder: (ref) => ref.child(userId).child('avatar.png'),
+  /// );
+  /// ```
+  ///
+  /// Throws [FirebaseBackendStorageException] when the upload fails.
   Future<String> upload({
     required dynamic file,
     String? fileName,
     Reference Function(Reference ref)? referenceBuilder,
   }) async {
     try {
-      final baseRef = FirebaseStorage.instance.ref(path);
+      final baseRef = storage.ref(path);
       final ref = referenceBuilder != null
           ? referenceBuilder(baseRef)
-          : baseRef.child(
-              fileName ??
-                  (kIsWeb ? (fileName ?? Timestamp.now().millisecondsSinceEpoch.toString()) : file.uri.pathSegments.last),
-            );
+          : baseRef.child(fileName ?? _defaultFileName(file));
 
-      late TaskSnapshot uploadTask;
-
-      if (kIsWeb) {
-        uploadTask = await ref.putBlob(file);
-      } else {
-        uploadTask = await ref.putFile(file);
-      }
+      final uploadTask = kIsWeb
+          ? await ref.putBlob(file)
+          : await ref.putFile(file);
 
       return await uploadTask.ref.getDownloadURL();
-    } catch (e) {
-      throw FirebaseStorageError('Failed to upload file to $path: $e');
+    } on FirebaseException catch (e) {
+      throw FirebaseBackendStorageException(
+        'Failed to upload file to $path: ${e.message ?? e.code}',
+        code: e.code,
+      );
     }
+  }
+
+  String _defaultFileName(dynamic file) {
+    if (kIsWeb) return DateTime.now().millisecondsSinceEpoch.toString();
+    return (file.uri as Uri).pathSegments.last;
   }
 }

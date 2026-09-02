@@ -1,27 +1,22 @@
-import 'package:firebase_backend/src/domain/error/dto_validation_error.dart';
+import 'package:firebase_backend/src/domain/validation/validatable.dart';
 
-abstract class FirebaseRequestDto {
-  /// Converts the DTO to a JSON-compatible map.
+/// A validated payload that can be written to Firestore.
+///
+/// Implement [toJson] with the document body and [onValidate] with the field
+/// checks. Endpoints validate the DTO before touching Firebase, so an invalid
+/// payload never reaches the network.
+abstract class FirebaseRequestDto extends Validatable {
+  /// The document body to write to Firestore.
   Map<String, dynamic> toJson();
-
-  /// Returnas as list of validation errors found in the DTO.
-  /// DtoValidationError contains the field name and the corresponding validation error message.
-  List<DtoValidationError> validationErrors = [];
-
-  /// Validates the DTO and returns true if it is valid, false otherwise.
-  /// This method should check all necessary fields and their constraints.
-  /// Must operate in conjunction with `validationErrors()` to provide detailed error information.
-  bool validate();
 }
 
+/// A [FirebaseRequestDto] with no payload and nothing to validate.
+///
+/// Useful for operations that take no input.
 class FirebaseNoRequestDto extends FirebaseRequestDto {
   @override
-  Map<String, dynamic> toJson() {
-    return {};
-  }
+  Map<String, dynamic> toJson() => const {};
 
   @override
-  bool validate() {
-    return true;
-  }
+  void onValidate() {}
 }

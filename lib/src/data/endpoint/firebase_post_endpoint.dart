@@ -1,34 +1,46 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_backend/src/core/firebase_endpoint.dart';
 import 'package:firebase_backend/src/data/dto/firebase_request_dto.dart';
 import 'package:firebase_backend/src/data/dto/firebase_response_dto.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_backend/src/domain/error/firebase_request_dto_validation_error.dart';
+import 'package:firebase_backend/src/domain/exception/firebase_backend_validation_exception.dart';
 
+/// Creates documents in the collection at [path].
 abstract class FirebasePostEndpoint<
   T extends FirebaseRequestDto,
   R extends FirebaseResponseDto
-> {
-  /// The Firestore collection path for the endpoint.
-  /// [path] is used to specify the collection from which documents will be retrieved.
-  /// For example, if your collection is named "users", the path would be "users".
-  /// If your collection is nested, you can specify the full path like "users/{userId}/posts".
-  String get path;
+>
+    with FirebaseEndpoint {
+  /// Builds the response for a document just written at [docRef].
+  R buildResponse(DocumentReference<Map<String, dynamic>> docRef, T requestDto);
 
-  /// Builds a response DTO from a Firestore document snapshot.
-  /// [docSnapshot] is the Firestore document snapshot retrieved from the collection.
-  /// This method should convert the document snapshot into the appropriate response DTO.
-  R buildResponse(DocumentReference docRef, T requestDto);
-
-  /// Creates a new document in the Firestore collection.
-  /// [requestDto] is the data transfer object containing the data to be stored.
-  /// Returns a Future that resolves to the response DTO after the document is created.
-  /// Throws a FirebaseRequestDtoValidationError if the request DTO is invalid.
-  Future<R> post(T requestDto) async {
-    if (requestDto.validate()) {
-      final docRef = await FirebaseFirestore.instance
-          .collection(path)
-          .add(requestDto.toJson());
-      return buildResponse(docRef, requestDto);
+  /// Writes [requestDto] as a new document.
+  ///
+  /// Without [documentId] the id is generated. Pass [documentId] to control it,
+  /// which is what you want for collections keyed by an external id such as
+  /// `users/{uid}`; note this overwrites any existing document at that id.
+  ///
+  /// Pass [transaction] to write inside a running transaction.
+  ///
+  /// Throws [FirebaseBackendValidationException] before touching Firebase when
+  /// the DTO is invalid.
+  Future<R> post(
+    T requestDto, {
+    String? documentId,
+    Transaction? transaction,
+  }) async {
+    if (!requestDto.validate()) {
+      throw FirebaseBackendValidationException(requestDto.validationErrors);
     }
-    throw FirebaseRequestDtoValidationError(requestDto.validationErrors);
+
+    final docRef = documentId == null ? collection.doc() : doc(documentId);
+    final json = requestDto.toJson();
+
+    if (transaction != null) {
+      transaction.set(docRef, json);
+    } else {
+      await docRef.set(json);
+    }
+
+    return buildResponse(docRef, requestDto);
   }
 }

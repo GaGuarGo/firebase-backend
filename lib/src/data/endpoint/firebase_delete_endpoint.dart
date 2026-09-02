@@ -1,26 +1,35 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_backend/src/domain/error/firebase_no_document_found_error.dart';
+import 'package:firebase_backend/src/core/firebase_endpoint.dart';
+import 'package:firebase_backend/src/domain/exception/firebase_backend_not_found_exception.dart';
 
-abstract class FirebaseDeleteEndpoint {
-  /// The Firestore collection path for the endpoint.
-  /// [path] is used to specify the collection from which documents will be deleted.
-  /// For example, if your collection is named "users", the path would be "users".
-  /// If your collection is nested, you can specify the full path like "users/{userId}/posts".
-  String get path;
+/// Deletes documents from the collection at [path].
+abstract class FirebaseDeleteEndpoint with FirebaseEndpoint {
+  /// Deletes the document [documentId].
+  ///
+  /// By default this reads the document first so a missing one fails with
+  /// [FirebaseBackendNotFoundException] instead of succeeding silently, which
+  /// is how Firestore behaves on its own. That read is billed; pass
+  /// `ensureExists: false` to delete without it when you do not need the check.
+  ///
+  /// Pass [transaction] to delete inside a running transaction; the existence
+  /// check is skipped there, since a transactional read must precede every
+  /// write.
+  Future<void> delete(
+    String documentId, {
+    bool ensureExists = true,
+    Transaction? transaction,
+  }) async {
+    final docRef = doc(documentId);
 
-  /// Deletes an existing document in the Firestore collection.
-  /// [documentId] is the ID of the document to be deleted.
-  /// Returns a Future that resolves to void after the document is deleted.
-  Future<void> delete(String documentId) async {
-    final doc = FirebaseFirestore.instance.collection(path).doc(documentId);
-    final docSnapshot = await doc.get();
-
-    if (!docSnapshot.exists) {
-      throw FirebaseNoDocumentFoundError(
-        'Document with ID $documentId not found in $path for deletion',
-      );
+    if (transaction != null) {
+      transaction.delete(docRef);
+      return;
     }
 
-    await docSnapshot.reference.delete();
+    if (ensureExists && !(await docRef.get()).exists) {
+      throw FirebaseBackendNotFoundException.forDocument(path, documentId);
+    }
+
+    await docRef.delete();
   }
 }

@@ -1,62 +1,42 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:firebase_backend/src/domain/validation/validatable.dart';
+import 'package:firebase_backend/src/domain/validation/validators.dart';
 
-import 'package:firebase_backend/src/data/dto/firebase_request_dto.dart';
-import 'package:firebase_backend/src/domain/error/dto_validation_error.dart';
+/// Details for creating a new email and password account.
+class FirebaseSignupDto extends Validatable {
+  /// Creates the details to sign up with.
+  FirebaseSignupDto({
+    required this.email,
+    required this.password,
+    this.displayName,
+  });
 
-class FirebaseSignupDto extends FirebaseRequestDto {
-  String? email;
-  String? password;
-  String? displayName;
+  /// The email to register.
+  final String email;
 
-  FirebaseSignupDto({this.email, this.password, this.displayName});
+  /// The password to register.
+  ///
+  /// Only checked for emptiness here; strength is verified against the
+  /// project's password policy by [FirebaseSignupUserRequest].
+  final String password;
+
+  /// Optional display name to set on the new account.
+  final String? displayName;
 
   @override
-  Map<String, dynamic> toJson() => {};
-
-  @override
-  bool validate() {
-    if (email == null || email!.isEmpty) {
-      validationErrors.add(
-        DtoValidationError(
-          field: 'email',
-          validationError: 'Email não pode ser nulo ou vazio',
-        ),
-      );
-      return false;
+  void onValidate() {
+    if (email.isEmpty) {
+      addError('email', 'Email não pode ser vazio');
+    } else if (!isValidEmail(email)) {
+      addError('email', 'Email em formato inválido');
     }
 
-    if (!RegExp(r"^[\w\.-]+@[\w\.-]+\.\w{2,}$").hasMatch(email!)) {
-      validationErrors.add(
-        DtoValidationError(
-          field: 'email',
-          validationError: 'Email em formato inválido',
-        ),
-      );
-      return false;
+    if (password.isEmpty) {
+      addError('password', 'Password não pode ser vazio');
     }
 
-    if (password == null || password!.isEmpty) {
-      validationErrors.add(
-        DtoValidationError(
-          field: 'password',
-          validationError: 'Password não pode ser nulo ou vazio',
-        ),
-      );
-      return false;
+    final name = displayName;
+    if (name != null && name.isNotEmpty && name.length < 3) {
+      addError('displayName', 'Name deve ter pelo menos 3 caracteres');
     }
-
-    if (displayName?.isNotEmpty ?? false) {
-      if (displayName!.length < 3) {
-        validationErrors.add(
-          DtoValidationError(
-            field: 'displayName',
-            validationError: 'Name deve ter pelo menos 3 caracteres',
-          ),
-        );
-        return false;
-      }
-    }
-
-    return true;
   }
 }
