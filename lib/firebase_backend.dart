@@ -34,6 +34,10 @@ export 'package:firebase_backend/src/data/endpoint/firebase_post_endpoint.dart';
 export 'package:firebase_backend/src/data/endpoint/firebase_stream_endpoint.dart';
 export 'package:firebase_backend/src/data/endpoint/firebase_update_endpoint.dart';
 
+/// [transactions]
+export 'package:firebase_backend/src/data/transaction/firebase_transaction_context.dart';
+export 'package:firebase_backend/src/data/transaction/firebase_transaction_endpoint.dart';
+
 /// [storage]
 export 'package:firebase_backend/src/data/storage/firebase_upload_to_storage.dart';
 
