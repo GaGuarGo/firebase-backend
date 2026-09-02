@@ -1,46 +1,27 @@
-import 'package:firebase_backend/src/data/dto/firebase_request_dto.dart';
-import 'package:firebase_backend/src/domain/error/dto_validation_error.dart';
+import 'package:firebase_backend/src/domain/validation/validatable.dart';
+import 'package:firebase_backend/src/domain/validation/validators.dart';
 
-class FirebaseSigninDto extends FirebaseRequestDto {
-  final String email;
-  final String password;
-
+/// Credentials for an email and password sign-in.
+class FirebaseSigninDto extends Validatable {
+  /// Creates the credentials to sign in with.
   FirebaseSigninDto({required this.email, required this.password});
 
-  @override
-  Map<String, dynamic> toJson() => {};
+  /// The account email.
+  final String email;
+
+  /// The account password.
+  final String password;
 
   @override
-  bool validate() {
+  void onValidate() {
     if (email.isEmpty) {
-      validationErrors.add(
-        DtoValidationError(
-          field: 'email',
-          validationError: 'Email não pode ser vazio',
-        ),
-      );
-      return false;
-    }
-
-    if (!RegExp(r"^[\w\.-]+@[\w\.-]+\.\w{2,}$").hasMatch(email)) {
-      validationErrors.add(
-        DtoValidationError(
-          field: 'email',
-          validationError: 'Email em formato inválido',
-        ),
-      );
-      return false;
+      addError('email', 'Email não pode ser vazio');
+    } else if (!isValidEmail(email)) {
+      addError('email', 'Email em formato inválido');
     }
 
     if (password.isEmpty) {
-      validationErrors.add(
-        DtoValidationError(
-          field: 'password',
-          validationError: 'Password não pode ser vazio',
-        ),
-      );
-      return false;
+      addError('password', 'Password não pode ser vazio');
     }
-    return true;
   }
 }

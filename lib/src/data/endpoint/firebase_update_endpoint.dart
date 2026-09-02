@@ -1,33 +1,54 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_backend/src/core/firebase_endpoint.dart';
 import 'package:firebase_backend/src/data/dto/firebase_request_dto.dart';
-import 'package:firebase_backend/src/domain/error/firebase_request_dto_validation_error.dart';
+import 'package:firebase_backend/src/data/dto/firebase_response_dto.dart';
+import 'package:firebase_backend/src/domain/exception/firebase_backend_not_found_exception.dart';
+import 'package:firebase_backend/src/domain/exception/firebase_backend_validation_exception.dart';
 
-abstract class FirebaseUpdateEndpoint<T extends FirebaseRequestDto> {
-  /// The Firestore collection path for the endpoint.
-  /// [path] is used to specify the collection from which documents will be retrieved.
-  /// For example, if your collection is named "users", the path would be "users".
-  /// If your collection is nested, you can specify the full path like "users/{userId}/posts".
-  String get path;
+/// Updates documents in the collection at [path].
+///
+/// Use [FirebaseNoResponseDto] as `R` when there is nothing to return.
+abstract class FirebaseUpdateEndpoint<
+  T extends FirebaseRequestDto,
+  R extends FirebaseResponseDto
+>
+    with FirebaseEndpoint {
+  /// Builds the response for the document just updated at [docRef].
+  R buildResponse(DocumentReference<Map<String, dynamic>> docRef, T requestDto);
 
-  /// Builds a response DTO from a Firestore document snapshot.
-  /// [docSnapshot] is the Firestore document snapshot retrieved from the collection.
-  /// This method should convert the document snapshot into the appropriate response DTO.
-  void buildResponse(String documentId, T requestDto);
-
-
-  /// Updates an existing document in the Firestore collection.
-  /// [documentId] is the ID of the document to be updated.
-  /// [requestDto] is the data transfer object containing the updated data.
-  /// Returns a Future that resolves to void after the document is updated.
-  /// Throws a FirebaseRequestDtoValidationError if the request DTO is invalid.
-  Future<void> update(String documentId, T requestDto) async {
-    if (requestDto.validate()) {
-      await FirebaseFirestore.instance
-          .collection(path)
-          .doc(documentId)
-          .update(requestDto.toJson());
-      return buildResponse(documentId, requestDto);
+  /// Merges [requestDto] into the document [documentId].
+  ///
+  /// Pass [transaction] to update inside a running transaction.
+  ///
+  /// Throws [FirebaseBackendValidationException] when the DTO is invalid and
+  /// [FirebaseBackendNotFoundException] when the document does not exist. The
+  /// missing document is detected from Firestore's own `not-found` response,
+  /// so this costs no extra read.
+  Future<R> update(
+    String documentId,
+    T requestDto, {
+    Transaction? transaction,
+  }) async {
+    if (!requestDto.validate()) {
+      throw FirebaseBackendValidationException(requestDto.validationErrors);
     }
-    throw FirebaseRequestDtoValidationError(requestDto.validationErrors);
+
+    final docRef = doc(documentId);
+    final json = requestDto.toJson();
+
+    if (transaction != null) {
+      transaction.update(docRef, json);
+    } else {
+      try {
+        await docRef.update(json);
+      } on FirebaseException catch (e) {
+        if (e.code == 'not-found') {
+          throw FirebaseBackendNotFoundException.forDocument(path, documentId);
+        }
+        rethrow;
+      }
+    }
+
+    return buildResponse(docRef, requestDto);
   }
 }

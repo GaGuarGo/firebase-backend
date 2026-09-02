@@ -1,28 +1,36 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_backend/src/auth/dtos/firebase_signin_dto.dart';
 import 'package:firebase_backend/src/auth/firebase_auth_request.dart';
-import 'package:firebase_backend/src/domain/error/firebase_auth_error.dart';
-import 'package:firebase_backend/src/domain/error/firebase_request_dto_validation_error.dart';
+import 'package:firebase_backend/src/domain/exception/firebase_backend_auth_exception.dart';
+import 'package:firebase_backend/src/domain/exception/firebase_backend_validation_exception.dart';
+import 'package:firebase_backend/src/firebase_backend_config.dart';
+import 'package:flutter/foundation.dart' show protected;
 
-
-/// Creates a Firebase user sign-in request.
-/// This class implements the [FirebaseAuthRequest] interface to handle user
-/// sign-in operations using Firebase Authentication.
+/// Signs a user in with email and password.
 class FirebaseSigninUser
     implements FirebaseAuthRequest<UserCredential, FirebaseSigninDto> {
+  /// The Auth instance to sign in against. Defaults to [FirebaseBackend.auth].
+  @protected
+  FirebaseAuth get auth => FirebaseBackend.auth;
+
+  /// Signs in with the credentials in [dto].
+  ///
+  /// Throws [FirebaseBackendValidationException] before reaching Firebase when
+  /// the credentials are malformed, and [FirebaseBackendAuthException] when
+  /// Firebase rejects them.
   @override
   Future<UserCredential> execute(FirebaseSigninDto dto) async {
     if (!dto.validate()) {
-      throw FirebaseRequestDtoValidationError(dto.validationErrors);
+      throw FirebaseBackendValidationException(dto.validationErrors);
     }
 
     try {
-      return await FirebaseAuth.instance.signInWithEmailAndPassword(
+      return await auth.signInWithEmailAndPassword(
         email: dto.email,
         password: dto.password,
       );
     } on FirebaseAuthException catch (e) {
-      throw FirebaseAuthError(e);
+      throw FirebaseBackendAuthException(e);
     }
   }
 }

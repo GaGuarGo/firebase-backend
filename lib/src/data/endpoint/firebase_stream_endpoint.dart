@@ -1,60 +1,65 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_backend/src/core/firebase_endpoint.dart';
 import 'package:firebase_backend/src/data/dto/firebase_response_dto.dart';
-import 'package:firebase_backend/src/domain/error/firebase_stream_error.dart';
+import 'package:firebase_backend/src/domain/exception/firebase_backend_stream_exception.dart';
 
-/// An abstract class representing a Firebase stream endpoint.
-/// It provides methods to stream all documents or a specific document by ID
-/// from a Firestore collection.
-abstract class FirebaseStreamEndpoint<R extends FirebaseResponseDto> {
+/// Listens to the collection at [path] in real time.
+///
+/// Firestore reports listener failures as **stream errors**, not by throwing
+/// from the call that creates the stream. Both methods below therefore surface
+/// [FirebaseBackendStreamException] through `onError`:
+///
+/// ```dart
+/// endpoint.streamAll().listen(
+///   (items) => ...,
+///   onError: (Object e) => ...,  // FirebaseBackendStreamException
+/// );
+/// ```
+abstract class FirebaseStreamEndpoint<R extends FirebaseResponseDto>
+    with FirebaseEndpoint {
+  /// Converts a Firestore document into the response DTO for this endpoint.
+  R buildResponse(DocumentSnapshot<Map<String, dynamic>> doc);
 
-  /// The Firestore collection path.
-  String get path;
+  /// Streams every document in the collection.
+  ///
+  /// Use [queryBuilder] to filter, order or limit the underlying query.
+  Stream<List<R>> streamAll({
+    Query<Map<String, dynamic>> Function(Query<Map<String, dynamic>> query)?
+    queryBuilder,
+  }) {
+    Query<Map<String, dynamic>> query = collection;
 
-  /// Builds a response object from a Firestore document snapshot.
-  /// [doc] The Firestore document snapshot.
-  /// Returns an instance of [R] representing the document data.
-  R buildResponse(DocumentSnapshot doc);
-
-
-  /// Streams all documents from the Firestore collection.
-  /// Returns a stream of lists of [R] representing the documents.
-  /// Throws a [FirebaseStreamError] if streaming fails.
-  Stream<List<R>> streamAll() {
-    try {
-      return FirebaseFirestore.instance.collection(path).snapshots().map((
-        snapshot,
-      ) {
-        return snapshot.docs.map((doc) => buildResponse(doc)).toList();
-      });
-    } catch (e) {
-      throw FirebaseStreamError(
-        'Failed to stream all documents from $path: $e',
-      );
+    if (queryBuilder != null) {
+      query = queryBuilder(query);
     }
+
+    return query
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map(buildResponse).toList())
+        .handleError(
+          (Object error, StackTrace stackTrace) => Error.throwWithStackTrace(
+            FirebaseBackendStreamException(
+              'Failed to stream documents from $path: $error',
+              cause: error,
+            ),
+            stackTrace,
+          ),
+        );
   }
 
-  /// Streams a specific document by its ID from the Firestore collection.
-  /// [id] The ID of the document to stream.
-  /// Returns a stream of [R] representing the document data, or null if the
-  /// document does not exist.
-  /// Throws a [FirebaseStreamError] if streaming fails.
+  /// Streams the document [id], emitting `null` while it does not exist.
   Stream<R?> streamById(String id) {
-    try {
-      return FirebaseFirestore.instance
-          .collection(path)
-          .doc(id)
-          .snapshots()
-          .map((doc) {
-            if (doc.exists) {
-              return buildResponse(doc);
-            } else {
-              return null;
-            }
-          });
-    } catch (e) {
-      throw FirebaseStreamError(
-        'Failed to stream document with ID $id from $path: $e',
-      );
-    }
+    return doc(id)
+        .snapshots()
+        .map((snapshot) => snapshot.exists ? buildResponse(snapshot) : null)
+        .handleError(
+          (Object error, StackTrace stackTrace) => Error.throwWithStackTrace(
+            FirebaseBackendStreamException(
+              'Failed to stream document with ID $id from $path: $error',
+              cause: error,
+            ),
+            stackTrace,
+          ),
+        );
   }
 }
